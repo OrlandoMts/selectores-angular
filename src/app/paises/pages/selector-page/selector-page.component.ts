@@ -18,8 +18,8 @@ export class SelectorPageComponent implements OnInit {
 
   miFormulario: FormGroup = this.fb.group( {
     region: ['', Validators.required], //Priimer campo*
-    pais: ['', Validators.required],
-    fronteras: ['', Validators.required]
+    pais: [{ value: '', disabled: true }, Validators.required],
+    fronteras: [{ value: '', disabled: true }, Validators.required]
   })
 
   constructor(private fb: FormBuilder, private paisService: PaisService) { }
@@ -31,7 +31,11 @@ export class SelectorPageComponent implements OnInit {
     //Obtener el valor del primer select cuando cambia
     this.miFormulario.get('region')?.valueChanges
       .pipe(
-        tap( (_) => this.miFormulario.get('pais')?.reset('') ),
+        tap( (_) => {
+          this.miFormulario.get('pais')?.reset(''),
+          this.miFormulario.get('pais')?.enable();
+          this.miFormulario.get('fronteras')?.disable();
+        } ),
         switchMap( (region) => this.paisService.getPaisesPorRegion(region))
       )
       .subscribe(paises => this.paises = paises);
@@ -39,7 +43,10 @@ export class SelectorPageComponent implements OnInit {
     //Obtener el valor del segundo select cuando cambia
     this.miFormulario.get('pais')?.valueChanges
       .pipe(
-        tap( () => this.miFormulario.get('fronteras')?.reset('') ),
+        tap( () => {
+          this.miFormulario.get('fronteras')?.reset('');
+          this.miFormulario.get('fronteras')?.enable();
+        }),
         switchMap( (codigo) => this.paisService.getFronteraDePais(codigo)),
       )
       .subscribe( pais => this.fronteras = pais[0]?.borders || []);
